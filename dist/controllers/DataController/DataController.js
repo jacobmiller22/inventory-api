@@ -9,10 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = require("../../../controllers/index");
-module.exports = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const element = yield (0, index_1.GraphGenController)();
-    res.setHeader("Content-Type", "text/html");
-    res.status(200).end(`${element}`);
+const DataController = () => __awaiter(void 0, void 0, void 0, function* () {
+    // const { data: historical_cases }: { data: [IDayRecord] } = await axios.get(
+    //   "https://api.covidtracking.com/v1/us/daily.json"
+    // );
+    return null;
 });
-//# sourceMappingURL=test.js.map
+exports.default = DataController;
+//# sourceMappingURL=DataController.js.map
