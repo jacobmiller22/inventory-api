@@ -5,5 +5,5 @@ module.exports = async (req: Request, res: Response) => {
   const element = await GraphGenController();
 
   res.setHeader("Content-Type", "text/html");
-  res.status(200).end(`${element}`);
+  res.status(200).end(element);
 };
