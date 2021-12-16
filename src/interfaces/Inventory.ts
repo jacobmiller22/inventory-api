@@ -14,8 +14,8 @@ export interface IInventoryItemMap {
 }
 
 export interface IInventoryLocation {
+  location_id: TLocationID;
   name: string;
-  id: TLocationID;
   description: string;
   items: TInventoryID[];
 }
