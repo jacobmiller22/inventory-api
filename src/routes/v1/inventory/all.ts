@@ -1,13 +1,14 @@
-import { Request, Response } from "express";
-import { DataController } from "../../../controllers/index";
-import { EHttpMethod } from "../../../interfaces/http";
-import { IInventoryItem } from "../../../interfaces/Inventory";
+import { Request, Response } from 'express';
+import { DataController } from '../../../controllers/index';
+import { EHttpMethod } from '../../../interfaces/http';
+import { IInventoryItem } from '../../../interfaces/Inventory';
 
 module.exports = async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "application/json");
+  res.setHeader('Content-Type', 'application/json');
   switch (req.method as EHttpMethod) {
     case EHttpMethod.GET:
-      res.setHeader("Content-Type", "application/json");
+      /** Get all inventory items */
+      res.setHeader('Content-Type', 'application/json');
       const all_string = await DataController().getEntireInventory();
       if (all_string == null) {
         return res.status(500).end();
@@ -15,10 +16,12 @@ module.exports = async (req: Request, res: Response) => {
       return res.status(200).end(all_string);
 
     case EHttpMethod.POST:
+      /** Create a new Item */
       const new_item: IInventoryItem = req.body;
       const _ = await DataController().createInventoryItem(new_item);
       return res.status(201).json();
     case EHttpMethod.PUT:
+      /** Update an inventory item */
       return;
     default:
       return res.status(404).json();

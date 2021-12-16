@@ -21,8 +21,8 @@ interface IDataController {
   createInventoryLocation: (location: IInventoryLocation) => Promise<TLocationID | null>;
   updateInventoryLocation: (location_id: TLocationID, newLocation: IInventoryLocation) => Promise<TLocationID | null>;
   searchInventoryItemByLocation: () => Promise<any>;
-  addItemToLocation: (location_id: TLocationID, item_id: TInventoryID) => Promise<any>;
-  deleteItemFromLocation: (location_id: TLocationID, item_id: TInventoryID) => Promise<any>;
+  addItemToLocation: (location_id: TLocationID, item_id: TInventoryID) => Promise<TLocationID | null>;
+  deleteItemFromLocation: (location_id: TLocationID, item_id: TInventoryID) => Promise<TLocationID | null>;
 }
 
 const DataController = (): IDataController => {
@@ -194,7 +194,7 @@ const DataController = (): IDataController => {
    * @param item_id The id of the item to be added
    * @returns Returns a promise that resolves to the new location_id, null if the item exists at the new location already, or if an error occurred.
    */
-  const addItemToLocation = async (location_id: TLocationID, item_id: TInventoryID): Promise<any> => {
+  const addItemToLocation = async (location_id: TLocationID, item_id: TInventoryID): Promise<TLocationID | null> => {
     const locations: IInventoryLocationMap = await getAllLocations();
 
     if (locations[location_id].items.includes(item_id)) {
@@ -220,7 +220,10 @@ const DataController = (): IDataController => {
    * @param item_id The id of the item to be removed
    * @returns Returns a promise that resolves to the new location_id, null if the item doesn't exist in the location, or if an error occurred.
    */
-  const deleteItemFromLocation = async (location_id: TLocationID, item_id: TInventoryID): Promise<any> => {
+  const deleteItemFromLocation = async (
+    location_id: TLocationID,
+    item_id: TInventoryID
+  ): Promise<TLocationID | null> => {
     const locations: IInventoryLocationMap = await getAllLocations();
 
     const itemIndex = locations[location_id].items.indexOf(item_id);
