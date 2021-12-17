@@ -1,29 +1,36 @@
 import { Request, Response } from 'express';
 import { DataController } from '../../../controllers/index';
 import { EHttpMethod } from '../../../interfaces/http';
-import { IInventoryItem } from '../../../interfaces/Inventory';
+import { IInventoryItem, IInventoryItemMap } from '../../../interfaces/Inventory';
 
 module.exports = async (req: Request, res: Response) => {
-  res.setHeader('Content-Type', 'application/json');
   switch (req.method as EHttpMethod) {
     case EHttpMethod.GET:
       /** Get all inventory items */
       res.setHeader('Content-Type', 'application/json');
-      const all_string = await DataController().getEntireInventory();
-      if (all_string == null) {
+      const all: IInventoryItemMap = await DataController().getEntireInventory();
+      if (all == null) {
         return res.status(500).end();
       }
-      return res.status(200).end(all_string);
+      return res.status(200).json(all);
 
     case EHttpMethod.POST:
       /** Create a new Item */
+
       const new_item: IInventoryItem = req.body;
-      const _ = await DataController().createInventoryItem(new_item);
-      return res.status(201).json();
+
+      const inventory_id = await DataController().createInventoryItem(new_item);
+
+      if (inventory_id == null) {
+        return res.status(400).end('Item already exists');
+      }
+
+      return res.status(201).end();
     case EHttpMethod.PUT:
       /** Update an inventory item */
       return;
     default:
+      console.log('default');
       return res.status(404).json();
   }
 

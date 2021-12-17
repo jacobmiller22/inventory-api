@@ -8,6 +8,8 @@ import {
   IInventoryItemMap,
 } from '../../interfaces/Inventory';
 import { DB_PATH, ALL_FILE, LOCATIONS_FILE } from '../../consts';
+//@ts-ignore
+import { v4 as uuid } from 'uuid';
 
 interface IDataController {
   // Inventory
@@ -46,18 +48,22 @@ const DataController = (): IDataController => {
    * @returns A promise that resolves to the new item's inventory_id, null if the item already exists, or if an error occurred.
    */
   const createInventoryItem = async (newItem: IInventoryItem): Promise<TInventoryID | null> => {
+    const inventory_id = `i_${uuid()}`; // Create a uuid for the new item's inventory_id
+
     const all: IInventoryItemMap = await getEntireInventory();
 
-    if (all[newItem.inventory_id]) {
+    if (all[inventory_id]) {
       // Item already exists.. Update should be called
       return null;
     }
 
-    const newAll = { ...all, [newItem.inventory_id]: newItem };
+    const newAll = { ...all, [inventory_id]: { ...newItem, inventory_id: inventory_id } };
 
     writeFile(`${DB_PATH}/${ALL_FILE}`, JSON.stringify(newAll));
 
-    return newItem.inventory_id;
+    const id_verification = await addItemToLocation(newItem.location_id, inventory_id);
+
+    return id_verification;
   };
 
   /**
@@ -197,15 +203,21 @@ const DataController = (): IDataController => {
   const addItemToLocation = async (location_id: TLocationID, item_id: TInventoryID): Promise<TLocationID | null> => {
     const locations: IInventoryLocationMap = await getAllLocations();
 
+    console.log(locations);
+    console.log(location_id);
+    console.log(locations[location_id]);
+
     if (locations[location_id].items.includes(item_id)) {
       // The item already exists in this location.. Nothing to add
       return null;
     }
+    console.log('adding');
 
     const newLocations = {
       ...locations,
       [location_id]: { ...locations[location_id], items: [...locations[location_id].items, item_id] },
     };
+    console.log(newLocations);
 
     writeFile(`${DB_PATH}/${LOCATIONS_FILE}`, JSON.stringify(newLocations));
 
