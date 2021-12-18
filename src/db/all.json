@@ -4,13 +4,15 @@
     "name": "Cat5 Cable",
     "location_id": "l_88f525b8-808b-4e14-a6f4-e000e2c37a66",
     "quantity": 1,
-    "note": "Not tied up"
+    "note": "Not tied up",
+    "type": "Cable"
   },
   "i_9b3d6458-493d-4a1d-9b8d-f1c4a7089e58": {
     "name": "Bag of Zip Ties",
     "quantity": 1,
     "note": null,
     "location_id": "l_88f525b8-808b-4e14-a6f4-e000e2c37a66",
-    "inventory_id": "i_9b3d6458-493d-4a1d-9b8d-f1c4a7089e58"
+    "inventory_id": "i_9b3d6458-493d-4a1d-9b8d-f1c4a7089e58",
+    "type": "Cable"
   }
 }

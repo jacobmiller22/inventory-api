@@ -7,6 +7,7 @@ export interface IInventoryItem {
   location_id: TLocationID;
   quantity: number;
   note: string;
+  type: string;
 }
 
 export interface IInventoryItemMap {
