@@ -8,7 +8,7 @@ module.exports = async (req: Request, res: Response) => {
     case EHttpMethod.GET:
       /** Get all inventory items */
       res.setHeader('Content-Type', 'application/json');
-      const all: IInventoryItemMap = await DataController().getEntireInventory();
+      const all: IInventoryItemMap = await DataController().getInventory();
       if (all == null) {
         return res.status(500).end();
       }

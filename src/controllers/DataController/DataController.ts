@@ -2,29 +2,36 @@ import { readFile, writeFile } from 'fs/promises';
 import {
   TLocationID,
   TInventoryID,
+  TItemType,
   IInventoryItem,
   IInventoryLocation,
   IInventoryLocationMap,
   IInventoryItemMap,
 } from '../../interfaces/Inventory';
-import { DB_PATH, ALL_FILE, LOCATIONS_FILE } from '../../consts';
+import { DB_PATH, ALL_FILE, LOCATIONS_FILE, TYPES_FILE } from '../../consts';
 //@ts-ignore
 import { v4 as uuid } from 'uuid';
 
 interface IDataController {
   // Inventory
-  getEntireInventory: () => Promise<IInventoryItemMap>;
+  getInventory: () => Promise<IInventoryItemMap>;
   createInventoryItem: (newItem: IInventoryItem) => Promise<TInventoryID | null>;
   updateInventoryItem: (i_id: TInventoryID, newItem: IInventoryItem) => Promise<TInventoryID | null>;
   searchInventoryItem: (field: string, value: string | number | TInventoryID | TLocationID) => Promise<any>;
   // Locations
-  getAllLocations: () => Promise<IInventoryLocationMap>;
+  getLocations: () => Promise<IInventoryLocationMap>;
+  getLocation: (location_id: TLocationID) => Promise<IInventoryLocation | null>;
   getLocationInventory: (location_id: TLocationID) => Promise<IInventoryItem[]>;
   createInventoryLocation: (location: IInventoryLocation) => Promise<TLocationID | null>;
   updateInventoryLocation: (location_id: TLocationID, newLocation: IInventoryLocation) => Promise<TLocationID | null>;
   searchInventoryItemByLocation: () => Promise<any>;
   addItemToLocation: (location_id: TLocationID, item_id: TInventoryID) => Promise<TLocationID | null>;
   deleteItemFromLocation: (location_id: TLocationID, item_id: TInventoryID) => Promise<TLocationID | null>;
+
+  // Types
+  getTypes: () => Promise<TItemType[]>;
+  createType: (type: TItemType) => Promise<Boolean>;
+  deleteType: (type: TItemType) => Promise<Boolean>;
 }
 
 const DataController = (): IDataController => {
@@ -36,7 +43,7 @@ const DataController = (): IDataController => {
    *
    * @returns A Promise that resolves to a map of all inventory items.
    */
-  const getEntireInventory = async (): Promise<IInventoryItemMap> => {
+  const getInventory = async (): Promise<IInventoryItemMap> => {
     const all_string = await readFile(`${DB_PATH}/${ALL_FILE}`, 'utf8');
     const all: IInventoryItemMap = JSON.parse(all_string);
     return all;
@@ -50,7 +57,7 @@ const DataController = (): IDataController => {
   const createInventoryItem = async (newItem: IInventoryItem): Promise<TInventoryID | null> => {
     const inventory_id = `i_${uuid()}`; // Create a uuid for the new item's inventory_id
 
-    const all: IInventoryItemMap = await getEntireInventory();
+    const all: IInventoryItemMap = await getInventory();
 
     if (all[inventory_id]) {
       // Item already exists.. Update should be called
@@ -76,7 +83,7 @@ const DataController = (): IDataController => {
     inventory_id: TInventoryID,
     newItem: IInventoryItem
   ): Promise<TInventoryID | null> => {
-    const all: IInventoryItemMap = await getEntireInventory();
+    const all: IInventoryItemMap = await getInventory();
 
     if (!all[inventory_id]) {
       // Item already exists.. Create should be called
@@ -110,10 +117,27 @@ const DataController = (): IDataController => {
    *
    * @returns A Promise that resolves to a map of all inventory locations.
    */
-  const getAllLocations = async (): Promise<IInventoryLocationMap> => {
+  const getLocations = async (): Promise<IInventoryLocationMap> => {
     const locations_string: string = await readFile(`${DB_PATH}/${LOCATIONS_FILE}`, 'utf8');
     const locations: IInventoryLocationMap = JSON.parse(locations_string);
     return locations;
+  };
+
+  /**
+   *
+   * @param location_id The id of the desired location
+   * @returns A promise containing a location that was requested, or null if the location doesn't exist
+   */
+  const getLocation = async (location_id: TInventoryID): Promise<IInventoryLocation | null> => {
+    const locations_string: string = await readFile(`${DB_PATH}/${LOCATIONS_FILE}`, 'utf8');
+    const locations: IInventoryLocationMap = JSON.parse(locations_string);
+
+    if (!locations[location_id]) {
+      // Location doesn't exist
+      return null;
+    }
+
+    return locations[location_id];
   };
 
   /**
@@ -124,11 +148,11 @@ const DataController = (): IDataController => {
    * @returns An array containing of the InventoryItems in the location
    */
   const getLocationInventory = async (location_id: TLocationID): Promise<IInventoryItem[]> => {
-    const locations: IInventoryLocationMap = await getAllLocations();
+    const locations: IInventoryLocationMap = await getLocations();
 
     const location = locations[location_id];
 
-    const items = await getEntireInventory();
+    const items = await getInventory();
 
     const inventory_items: IInventoryItem[] = location.items.map((i_id: TInventoryID) => {
       return items[i_id];
@@ -145,7 +169,7 @@ const DataController = (): IDataController => {
    * @returns A promise that resolves to the location's location_id, null if the location already exists, or if an error occurred.
    */
   const createInventoryLocation = async (location: IInventoryLocation): Promise<TLocationID | null> => {
-    const locations: IInventoryLocationMap = await getAllLocations();
+    const locations: IInventoryLocationMap = await getLocations();
 
     if (locations[location.location_id]) {
       // Location already exists.. Update should be called
@@ -169,7 +193,7 @@ const DataController = (): IDataController => {
     location_id: TLocationID,
     newLocation: IInventoryLocation
   ): Promise<TLocationID | null> => {
-    const locations: IInventoryLocationMap = await getAllLocations();
+    const locations: IInventoryLocationMap = await getLocations();
 
     if (!locations[location_id]) {
       // Location doesn't exist.. Create should be called
@@ -201,23 +225,17 @@ const DataController = (): IDataController => {
    * @returns Returns a promise that resolves to the new location_id, null if the item exists at the new location already, or if an error occurred.
    */
   const addItemToLocation = async (location_id: TLocationID, item_id: TInventoryID): Promise<TLocationID | null> => {
-    const locations: IInventoryLocationMap = await getAllLocations();
-
-    console.log(locations);
-    console.log(location_id);
-    console.log(locations[location_id]);
+    const locations: IInventoryLocationMap = await getLocations();
 
     if (locations[location_id].items.includes(item_id)) {
       // The item already exists in this location.. Nothing to add
       return null;
     }
-    console.log('adding');
 
     const newLocations = {
       ...locations,
       [location_id]: { ...locations[location_id], items: [...locations[location_id].items, item_id] },
     };
-    console.log(newLocations);
 
     writeFile(`${DB_PATH}/${LOCATIONS_FILE}`, JSON.stringify(newLocations));
 
@@ -236,7 +254,7 @@ const DataController = (): IDataController => {
     location_id: TLocationID,
     item_id: TInventoryID
   ): Promise<TLocationID | null> => {
-    const locations: IInventoryLocationMap = await getAllLocations();
+    const locations: IInventoryLocationMap = await getLocations();
 
     const itemIndex = locations[location_id].items.indexOf(item_id);
 
@@ -257,18 +275,79 @@ const DataController = (): IDataController => {
     return location_id;
   };
 
+  /**
+   *
+   * Retrieve all types in the database
+   *
+   * @returns A promise that resolves to a list of all the types of items in the database
+   */
+  const getTypes = async (): Promise<TItemType[]> => {
+    const types_string: string = await readFile(`${DB_PATH}/${TYPES_FILE}`, 'utf8');
+    const types: string[] = JSON.parse(types_string);
+    return types;
+  };
+
+  /**
+   *
+   * Creates a type in the database
+   *
+   * @param type The type to be added
+   * @returns A boolean value indicating whether the type was successfully created or not
+   */
+  const createType = async (type: TItemType): Promise<Boolean> => {
+    const types: TItemType[] = await getTypes();
+
+    if (types.includes(type)) {
+      // Type already exists
+      return false;
+    }
+
+    const newTypes: TItemType[] = [...types, type];
+
+    writeFile(`${DB_PATH}/${TYPES_FILE}`, JSON.stringify(newTypes));
+
+    return true;
+  };
+
+  /**
+   *
+   * Deletes a type from the database, all items of that type will be changed to the default type
+   *
+   * @param type the type to be deleted
+   * @returns A boolean value indicating whether the type was successfully deleted or not
+   */
+  const deleteType = async (type: TItemType): Promise<Boolean> => {
+    const types: TItemType[] = await getTypes();
+
+    if (!types.includes(type)) {
+      // Type doesn't exist
+      return false;
+    }
+
+    const newTypes: TItemType[] = types.filter((t: TItemType) => t !== type);
+
+    writeFile(`${DB_PATH}/${TYPES_FILE}`, JSON.stringify(newTypes));
+
+    return true;
+  };
+
   return {
-    getEntireInventory,
+    getInventory,
     createInventoryItem,
     updateInventoryItem,
     searchInventoryItem,
-    getAllLocations,
+    getLocations,
+    getLocation,
     getLocationInventory,
     createInventoryLocation,
     updateInventoryLocation,
     searchInventoryItemByLocation,
     addItemToLocation,
     deleteItemFromLocation,
+
+    getTypes,
+    createType,
+    deleteType,
   };
 };
 

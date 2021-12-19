@@ -1,5 +1,6 @@
 export type TInventoryID = string;
 export type TLocationID = string;
+export type TItemType = string;
 
 export interface IInventoryItem {
   name: string;
@@ -7,7 +8,7 @@ export interface IInventoryItem {
   location_id: TLocationID;
   quantity: number;
   note: string;
-  type: string;
+  type: TItemType;
 }
 
 export interface IInventoryItemMap {
