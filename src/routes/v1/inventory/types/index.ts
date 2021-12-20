@@ -21,4 +21,17 @@ router.get('/', async (req: Request, res: Response) => {
   return res.status(200).json(all);
 });
 
+router.post('/', getJsonParser(), async (req: Request, res: Response) => {
+  /** Add a new type */
+  const type: TItemType = req.body.type;
+  if (type == null) {
+    return res.status(400).end();
+  }
+  const result: Boolean = await DataController().createType(type);
+  if (result == null) {
+    return res.status(500).end();
+  }
+  return res.status(200).json(result);
+});
+
 module.exports = router;

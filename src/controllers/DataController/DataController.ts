@@ -7,6 +7,9 @@ import {
   IInventoryLocation,
   IInventoryLocationMap,
   IInventoryItemMap,
+  isType,
+  isInventoryLocation,
+  isInventoryItem,
 } from '../../interfaces/Inventory';
 import { DB_PATH, ALL_FILE, LOCATIONS_FILE, TYPES_FILE } from '../../consts';
 //@ts-ignore
@@ -22,7 +25,7 @@ interface IDataController {
   // Locations
   getLocations: () => Promise<IInventoryLocationMap>;
   getLocation: (location_id: TLocationID) => Promise<IInventoryLocation | null>;
-  getLocationInventory: (location_id: TLocationID) => Promise<IInventoryItem[]>;
+  getInventoryLocation: (location_id: TLocationID) => Promise<IInventoryItem[]>;
   createInventoryLocation: (location: IInventoryLocation) => Promise<TLocationID | null>;
   updateInventoryLocation: (location_id: TLocationID, newLocation: IInventoryLocation) => Promise<TLocationID | null>;
   searchInventoryItemByLocation: () => Promise<any>;
@@ -68,6 +71,11 @@ const DataController = (): IDataController => {
    * @returns A promise that resolves to the new item's inventory_id, null if the item already exists, or if an error occurred.
    */
   const createInventoryItem = async (newItem: IInventoryItem): Promise<TInventoryID | null> => {
+    if (!isInventoryItem(newItem)) {
+      // Fails validation
+      return null;
+    }
+
     const inventory_id = `i_${uuid()}`; // Create a uuid for the new item's inventory_id
 
     const all: IInventoryItemMap = await getInventory();
@@ -160,7 +168,7 @@ const DataController = (): IDataController => {
    * @param location_id The id of the location to be retrieved
    * @returns An array containing of the InventoryItems in the location
    */
-  const getLocationInventory = async (location_id: TLocationID): Promise<IInventoryItem[]> => {
+  const getInventoryLocation = async (location_id: TLocationID): Promise<IInventoryItem[]> => {
     const locations: IInventoryLocationMap = await getLocations();
 
     const location = locations[location_id];
@@ -182,6 +190,11 @@ const DataController = (): IDataController => {
    * @returns A promise that resolves to the location's location_id, null if the location already exists, or if an error occurred.
    */
   const createInventoryLocation = async (location: IInventoryLocation): Promise<TLocationID | null> => {
+    if (!isInventoryLocation(location)) {
+      // Fails validation
+      return null;
+    }
+
     const locations: IInventoryLocationMap = await getLocations();
 
     if (locations[location.location_id]) {
@@ -308,6 +321,10 @@ const DataController = (): IDataController => {
    * @returns A boolean value indicating whether the type was successfully created or not
    */
   const createType = async (type: TItemType): Promise<Boolean> => {
+    if (!isType(type)) {
+      return false;
+    }
+
     const types: TItemType[] = await getTypes();
 
     if (types.includes(type)) {
@@ -354,7 +371,7 @@ const DataController = (): IDataController => {
     // Locations
     getLocations,
     getLocation,
-    getLocationInventory,
+    getInventoryLocation,
     createInventoryLocation,
     updateInventoryLocation,
     searchInventoryItemByLocation,
