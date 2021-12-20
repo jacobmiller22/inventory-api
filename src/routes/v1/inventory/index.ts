@@ -1,38 +1,32 @@
-import { Request, Response } from 'express';
+/**
+ *
+ * The entry point to the route: 'server/v1/inventory/
+ *
+ */
+import { Router, Request, Response } from 'express';
 import { DataController } from '../../../controllers/index';
-import { EHttpMethod } from '../../../interfaces/http';
-import { IInventoryItem, IInventoryItemMap } from '../../../interfaces/Inventory';
 
-module.exports = async (req: Request, res: Response) => {
-  switch (req.method as EHttpMethod) {
-    case EHttpMethod.GET:
-      /** Get all inventory items */
-      res.setHeader('Content-Type', 'application/json');
-      const all: IInventoryItemMap = await DataController().getInventory();
-      if (all == null) {
-        return res.status(500).end();
-      }
-      return res.status(200).json(all);
+import { IInventoryItemMap } from '../../../interfaces/Inventory';
 
-    case EHttpMethod.POST:
-      /** Create a new Item */
+let router = Router();
 
-      const new_item: IInventoryItem = req.body;
+/** Further nested routes */
 
-      const inventory_id = await DataController().createInventoryItem(new_item);
+router.use('/item', require('./item'));
+router.use('/locations', require('./locations'));
+router.use('/types', require('./types'));
 
-      if (inventory_id == null) {
-        return res.status(400).end('Item already exists');
-      }
-
-      return res.status(201).end();
-    case EHttpMethod.PUT:
-      /** Update an inventory item */
-      return;
-    default:
-      console.log('default');
-      return res.status(404).json();
+/**
+ * @api {get} /v1/inventory/ Get the inventory
+ */
+router.get('/', async (req: Request, res: Response) => {
+  /** Get all inventory items */
+  res.setHeader('Content-Type', 'application/json');
+  const all: IInventoryItemMap = await DataController().getInventory();
+  if (all == null) {
+    return res.status(500).end();
   }
+  return res.status(200).json(all);
+});
 
-  res.status(200).json();
-};
+module.exports = router;

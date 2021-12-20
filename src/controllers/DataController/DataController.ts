@@ -15,6 +15,7 @@ import { v4 as uuid } from 'uuid';
 interface IDataController {
   // Inventory
   getInventory: () => Promise<IInventoryItemMap>;
+  getInventoryItem: (inventory_id: TInventoryID) => Promise<IInventoryItem | null>;
   createInventoryItem: (newItem: IInventoryItem) => Promise<TInventoryID | null>;
   updateInventoryItem: (i_id: TInventoryID, newItem: IInventoryItem) => Promise<TInventoryID | null>;
   searchInventoryItem: (field: string, value: string | number | TInventoryID | TLocationID) => Promise<any>;
@@ -47,6 +48,18 @@ const DataController = (): IDataController => {
     const all_string = await readFile(`${DB_PATH}/${ALL_FILE}`, 'utf8');
     const all: IInventoryItemMap = JSON.parse(all_string);
     return all;
+  };
+
+  const getInventoryItem = async (inventory_id: TInventoryID): Promise<IInventoryItem | null> => {
+    const inventory = await getInventory();
+
+    const item = inventory[inventory_id];
+
+    if (!item) {
+      return null;
+    }
+
+    return item;
   };
 
   /**
@@ -332,10 +345,13 @@ const DataController = (): IDataController => {
   };
 
   return {
+    // Inventory
     getInventory,
+    getInventoryItem,
     createInventoryItem,
     updateInventoryItem,
     searchInventoryItem,
+    // Locations
     getLocations,
     getLocation,
     getLocationInventory,
@@ -344,7 +360,7 @@ const DataController = (): IDataController => {
     searchInventoryItemByLocation,
     addItemToLocation,
     deleteItemFromLocation,
-
+    //Types
     getTypes,
     createType,
     deleteType,
