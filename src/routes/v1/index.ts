@@ -10,4 +10,6 @@ let router = Router();
 
 router.use('/inventory', require('./inventory'));
 
+router.use('/images/convert', require('./images/convert'));
+
 module.exports = router;

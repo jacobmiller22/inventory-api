@@ -1,7 +1,14 @@
 // const express = require("express");
 import express from 'express';
+import cors from 'cors';
+
+const corsOptions = {
+  origin: 'http://localhost:3000',
+};
 
 const app = express();
+
+app.use(cors(corsOptions));
 
 // define a route handler for the default home page
 
