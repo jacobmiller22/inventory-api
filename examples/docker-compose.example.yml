@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  inventory-api:
+    build:
+      dockerfile: dockerfile.dev
+      context: "./inventory-api"
+      target: base
+    volumes:
+      - ./inventory-api:/usr/src/app/src
+      - ./inventory-api/nodemon.json:/usr/src/app/nodemon.json
+    container_name: inventory-api
+    ports:
+      - '8080:8080'
+    networks:
+      - reverse-proxy
+    command: npm start
+    
+networks:
+  reverse-proxy:
+    external: true
