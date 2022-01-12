@@ -21,7 +21,7 @@ const PORT = process.env.PORT || process.argv[arg_port === 0 ? -1 : arg_port] ||
 // start the Express server
 try {
   app.listen(PORT, () => {
-    console.log(`server started at http://localhost:${PORT}`);
+    console.log(`server started at http://localhost:4000`);
   });
 } catch (e) {
   console.log('Failed to start server on port ' + PORT);

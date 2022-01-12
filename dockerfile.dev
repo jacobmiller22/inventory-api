@@ -1,0 +1,16 @@
+FROM node:alpine as base
+
+# Create app directory within container
+WORKDIR /usr/src/app
+
+# Install dependencies
+COPY ./package.json ./
+RUN npm install
+COPY ./ ./
+
+
+FROM base as production
+
+ENV NODE_PATH=./build
+
+RUN npm run build

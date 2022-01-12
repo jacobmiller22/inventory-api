@@ -1,14 +1,15 @@
+//@ts-ignore
 {
   "compilerOptions": {
     "lib": ["es5", "es6", "dom", "dom.iterable"],
     "module": "commonjs",
     "esModuleInterop": true,
-    // "target": "es6",
+    "target": "esnext",
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist",
-    "baseUrl": "src",
+    "outDir": "./build",
+    "baseUrl": "./src",
     "paths": {
       "*": ["node_modules/*"]
     }
