@@ -1,4 +1,4 @@
-FROM node:alpine as base
+FROM node:alpine
 
 # Create app directory within container
 WORKDIR /usr/src/app
@@ -9,8 +9,9 @@ RUN npm install
 COPY ./ ./
 
 
-FROM base as production
+# FROM base as production
 
-ENV NODE_PATH=./build
 
 RUN npm run build
+
+CMD ["npm", "start"]

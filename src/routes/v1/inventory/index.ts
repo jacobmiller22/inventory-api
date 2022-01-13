@@ -20,6 +20,7 @@ router.use('/types', require('./types'));
  * @api {get} /v1/inventory/ Get the inventory
  */
 router.get('/', async (req: Request, res: Response) => {
+
   /** Get all inventory items */
   res.setHeader('Content-Type', 'application/json');
   const all: IInventoryItemMap = await DataController().getInventory();

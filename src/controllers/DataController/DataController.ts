@@ -48,9 +48,18 @@ const DataController = (): IDataController => {
    * @returns A Promise that resolves to a map of all inventory items.
    */
   const getInventory = async (): Promise<IInventoryItemMap> => {
-    const all_string = await readFile(`${DB_PATH}/${ALL_FILE}`, 'utf8');
-    const all: IInventoryItemMap = JSON.parse(all_string);
-    return all;
+
+    console.log("Reading from inventory", `${DB_PATH}/${ALL_FILE}`)
+
+    try{
+
+      const all_string = await readFile(`${DB_PATH}/${ALL_FILE}`, 'utf8');
+      const all: IInventoryItemMap = JSON.parse(all_string);
+      return all;
+    } catch(err) {
+      console.error(err)
+    }
+    return {};
   };
 
   const getInventoryItem = async (inventory_id: TInventoryID): Promise<IInventoryItem | null> => {
